@@ -19,7 +19,6 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Activity {
-
     @Id
     private String id;
     private String userId;
@@ -27,10 +26,13 @@ public class Activity {
     private Integer duration;
     private Integer caloriesBurned;
     private LocalDateTime startTime;
+
     @Field("metrics")
     private Map<String, Object> additionalMetrics;
+
     @CreatedDate
     private LocalDateTime createdAt;
+
     @LastModifiedDate
     private LocalDateTime updatedAt;
 }

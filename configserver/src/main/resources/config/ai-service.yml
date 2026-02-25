@@ -1,3 +1,6 @@
+server:
+  port: 8083
+
 spring:
   data:
     mongodb:
@@ -9,15 +12,12 @@ spring:
     username: guest
     password: guest
 
-server:
-  port: 8083
 
 eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
-  instance:
-    prefer-ip-address: true
+
 
 rabbitmq:
   exchange:
@@ -27,7 +27,8 @@ rabbitmq:
   routing:
     key: activity.tracking
 
-  gemini:
-    api:
-      url: ${GEMINI_API_URL}
-      key: ${GEMINI_API_KEY}
+
+gemini:
+  api:
+    url: ${GEMINI_API_URL}
+    key: ${GEMINI_API_KEY}

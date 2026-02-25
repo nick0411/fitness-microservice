@@ -1,36 +1,32 @@
 package com.fitness.activityservice.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class UserValidationService {
-
     private final WebClient userServiceWebClient;
 
-    public boolean validateUser(String userId){
-
-        try {
-            return Boolean.TRUE.equals(userServiceWebClient.get()
+    public boolean validateUser(String userId) {
+        log.info("Calling User Validation API for userId: {}", userId);
+        try{
+            return userServiceWebClient.get()
                     .uri("/api/users/{userId}/validate", userId)
                     .retrieve()
                     .bodyToMono(Boolean.class)
-                    .block());
-
+                    .block();
         } catch (WebClientResponseException e) {
-            if(e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                throw new RuntimeException("User Not Found: " + userId + " (from User Service)", e);
-            } else if(e.getStatusCode() == HttpStatus.BAD_REQUEST) {
-                throw new RuntimeException("Invalid request: " + userId + " (from User Service)", e);
-            } else {
-                throw new RuntimeException("Unexpected HTTP error from User Service: " + e.getMessage(), e);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to call User Service (Network/Connection Error): " + e.getMessage(), e);
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND)
+                throw new RuntimeException("User Not Found: " + userId);
+            else if (e.getStatusCode() == HttpStatus.BAD_REQUEST)
+                throw new RuntimeException("Invalid Request: " + userId);
         }
+        return false;
     }
 }

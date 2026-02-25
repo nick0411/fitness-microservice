@@ -21,13 +21,14 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserProfile(userId));
     }
 
+    @PostMapping("/register")
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request){
+        return ResponseEntity.ok(userService.register(request));
+    }
+
+
     @GetMapping("/{userId}/validate")
     public ResponseEntity<Boolean> validateUser(@PathVariable String userId){
         return ResponseEntity.ok(userService.existByUserId(userId));
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request){
-        return ResponseEntity.ok((userService.register(request)));
     }
 }

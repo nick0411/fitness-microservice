@@ -13,13 +13,14 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ActivityMessageListener {
 
-    private final ActivityAIService activityAIService;
+    private final ActivityAIService aiService;
     private final RecommendationRepository recommendationRepository;
 
     @RabbitListener(queues = "activity.queue")
-    public void processActivity(Activity activity){
-        log.info("Received activity for processing: {}", activity.getType());
-        Recommendation recommendation = activityAIService.generateRecommendation(activity);
+    public void processActivity(Activity activity) {
+        log.info("Received activity for processing: {}", activity.getId());
+//        log.info("Generated Recommendation: {}", aiService.generateRecommendation(activity));
+        Recommendation recommendation = aiService.generateRecommendation(activity);
         recommendationRepository.save(recommendation);
     }
 }
