@@ -97,21 +97,21 @@ Security is centralized at the Gateway level.
 
 ------------------------------------------------------------------------
 
-# 📦 Microservices & Ports
+## 📦 Services & Ports
 
-  Service            Port    Responsibility
-  ------------------ ------- ------------------------------
-  Config Server      8888    Centralized configuration
-  Eureka Server      8761    Service discovery
-  API Gateway        8080    Routing + JWT validation
-  User Service       8081    User management (PostgreSQL)
-  Activity Service   8082    Activity tracking (MongoDB)
-  AI Service         8083    AI recommendations (MongoDB)
-  Keycloak           8181    OAuth2 authentication
-  RabbitMQ           5672    Event broker
-  PostgreSQL         5432    User database
-  MongoDB            27017   Activity & Recommendation DB
-  Frontend           5173    React UI
+| Service            | Port  | Responsibility                          |
+|--------------------|-------|------------------------------------------|
+| Config Server      | 8888  | Centralized configuration               |
+| Eureka Server      | 8761  | Service discovery                       |
+| API Gateway        | 8080  | Routing + JWT validation                |
+| User Service       | 8081  | User management (PostgreSQL)            |
+| Activity Service   | 8082  | Activity tracking (MongoDB)             |
+| AI Service         | 8083  | AI recommendations (MongoDB)            |
+| Keycloak           | 8181  | OAuth2 authentication                   |
+| RabbitMQ           | 5672  | Event broker                            |
+| PostgreSQL         | 5432  | User database                           |
+| MongoDB            | 27017 | Activity & Recommendation database      |
+| Frontend           | 5173  | React UI                                |
 
 ------------------------------------------------------------------------
 
