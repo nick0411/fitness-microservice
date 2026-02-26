@@ -1,51 +1,99 @@
 # 🏋️‍♂️ Fitness Microservices Platform
 
-A production-style Spring Boot Microservices Architecture featuring
-secure OAuth2 authentication (Keycloak), event-driven AI recommendations
-(Google Gemini), and polyglot persistence with PostgreSQL and MongoDB.
+> Enterprise-style Spring Boot Microservices Architecture with OAuth2
+> Security, Event-Driven AI Recommendations, and Polyglot Persistence.
 
 ------------------------------------------------------------------------
 
-## 🚀 Project Overview
+## ✨ Overview
 
-This system demonstrates a real-world distributed backend architecture
-using modern Spring Cloud components. It is designed to simulate an
-enterprise-grade fitness tracking platform where users can log
-activities and receive AI-generated workout recommendations.
+This project is a production-style distributed backend system built
+using Spring Boot and Spring Cloud.\
+It simulates a real-world fitness tracking platform where:
 
-The project emphasizes:
+-   Users authenticate securely using OAuth2 (PKCE flow).
+-   Activities are logged and stored.
+-   Events are published asynchronously via RabbitMQ.
+-   AI-powered workout recommendations are generated using Gemini API.
+-   All services are routed through a secure API Gateway.
 
--   Secure authentication using OAuth2 + PKCE
--   Centralized API Gateway security
--   Service discovery with Eureka
--   Event-driven communication using RabbitMQ
--   AI integration using Gemini API
--   Polyglot persistence (PostgreSQL + MongoDB)
--   Clean microservices separation
+The system demonstrates clean microservices separation, centralized
+security, service discovery, and event-driven architecture.
 
 ------------------------------------------------------------------------
 
-# 🏗️ Architecture Overview
+# 🏗️ System Architecture
 
-Frontend (React + Vite :5173) │ ▼ Keycloak (OAuth2 Server :8181) │ ▼ API
-Gateway (:8080) -- JWT Validation │ ▼ Eureka Discovery (:8761) │
-├───────────────┬────────────────┬──────────────── ▼ ▼ ▼ User Service
-Activity Service AI Service (:8081) (:8082) (:8083) (PostgreSQL)
-(MongoDB) (MongoDB) │ ▼ RabbitMQ (:5672) │ ▼ AI Service (Consumer) │ ▼
-Gemini API
+                                       ┌─────────────────────────┐
+                                       │        Keycloak         │
+                                       │    OAuth2 Server        │
+                                       │          :8181          │
+                                       └─────────────▲───────────┘
+                                                     │
+                                                     │ JWT (PKCE)
+                                                     │
+    ┌──────────────────┐                   ┌────────┴─────────┐
+    │  React Frontend  │──────────────────▶│   API Gateway    │
+    │     (Vite)       │                   │       :8080      │
+    │     :5173        │                   │  JWT Validation  │
+    └──────────────────┘                   └────────┬─────────┘
+                                                     │
+                                                     ▼
+                                             ┌──────────────┐
+                                             │   Eureka     │
+                                             │    :8761     │
+                                             └──────┬───────┘
+                                                    │
+            ┌──────────────┬──────────────┬──────────────┐
+            ▼              ▼              ▼              ▼
+     ┌────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+     │ User Svc   │ │ Activity Svc │ │  AI Service  │ │ ConfigServer │
+     │   :8081    │ │    :8082     │ │    :8083     │ │    :8888     │
+     └────────────┘ └───────┬──────┘ └───────▲──────┘ └──────────────┘
+            │                │                │
+            ▼                │                │
+       PostgreSQL            │                │
+         :5432               │                │
+                             │ Publish Event  │ Consume Event
+                             ▼                │
+                       ┌──────────────┐       │
+                       │  RabbitMQ    │───────┘
+                       │    :5672     │
+                       └──────────────┘
+                              │
+                              ▼
+                       ┌──────────────┐
+                       │  AI Service  │
+                       │  (Consumer)  │
+                       └───────┬──────┘
+                               │
+                               ▼
+                       ┌──────────────┐
+                       │  Gemini API  │
+                       └──────────────┘
 
 ------------------------------------------------------------------------
 
-# 🔐 Authentication -- Keycloak (OAuth2 + PKCE)
+# 🔐 Authentication -- OAuth2 + PKCE
 
--   Realm: fitness-oauth2
--   Client: oauth2-pkce-client
+Authentication is handled by Keycloak.
+
+### Configuration
+
+-   Realm: `fitness-oauth2`
+-   Client: `oauth2-pkce-client`
 -   Keycloak URL: http://localhost:8181
 -   Redirect URI: http://localhost:5173
 
-Flow: 1. User logs in via Keycloak. 2. Frontend receives access token.
-3. Requests are sent to API Gateway. 4. Gateway validates JWT before
-forwarding requests.
+### Authentication Flow
+
+1.  User logs in via Keycloak.
+2.  Frontend receives access token.
+3.  Token is sent to API Gateway.
+4.  Gateway validates JWT.
+5.  Request forwarded to internal services.
+
+Security is centralized at the Gateway level.
 
 ------------------------------------------------------------------------
 
@@ -56,9 +104,9 @@ forwarding requests.
   Config Server      8888    Centralized configuration
   Eureka Server      8761    Service discovery
   API Gateway        8080    Routing + JWT validation
-  User Service       8081    User management
-  Activity Service   8082    Activity tracking
-  AI Service         8083    AI recommendations
+  User Service       8081    User management (PostgreSQL)
+  Activity Service   8082    Activity tracking (MongoDB)
+  AI Service         8083    AI recommendations (MongoDB)
   Keycloak           8181    OAuth2 authentication
   RabbitMQ           5672    Event broker
   PostgreSQL         5432    User database
@@ -67,31 +115,37 @@ forwarding requests.
 
 ------------------------------------------------------------------------
 
-# 🐘 Databases
+# 🗄️ Databases
 
 ## PostgreSQL (User Service)
 
-Database: fitness_user_db\
-Port: 5432
+-   Database: `fitness_user_db`
+-   Port: 5432
+
+Used for structured relational user data.
 
 ## MongoDB
 
--   fitnessactivity (Activity Service)
--   fitnessrecommendation (AI Service)
+-   `fitnessactivity` → Activity Service
+-   `fitnessrecommendation` → AI Service
+-   Port: 27017
 
-Port: 27017
+Used for flexible document-based storage.
 
 ------------------------------------------------------------------------
 
 # 🐇 Event-Driven AI Pipeline
 
-1.  Activity Service saves activity in MongoDB.
+1.  Activity Service stores activity in MongoDB.
 2.  Activity Service publishes event to RabbitMQ.
 3.  RabbitMQ delivers message to AI Service.
-4.  AI Service processes activity data.
-5.  AI Service calls Gemini API.
-6.  Recommendation is generated and stored.
-7.  User retrieves recommendation via API Gateway.
+4.  AI Service consumes the event.
+5.  AI Service sends structured prompt to Gemini API.
+6.  Gemini generates workout recommendation.
+7.  AI Service stores recommendation in MongoDB.
+8.  Client retrieves recommendation via API Gateway.
+
+This ensures loose coupling and asynchronous processing.
 
 ------------------------------------------------------------------------
 
@@ -99,44 +153,52 @@ Port: 27017
 
 AI Service integrates with Gemini using environment variables:
 
-export GEMINI_API_URL=your_endpoint\
-export GEMINI_API_KEY=your_api_key
+    export GEMINI_API_URL=your_endpoint
+    export GEMINI_API_KEY=your_api_key
 
-The service sends structured prompts to Gemini and stores the generated
-workout recommendations.
+Gemini generates personalized workout recommendations based on activity
+data.
 
 ------------------------------------------------------------------------
 
 # ⚙️ Config Server
 
--   Runs on port 8888
--   Uses native profile
--   Configuration stored under classpath:/config
--   Services import configuration using spring.config.import
+-   Port: 8888
+-   Profile: native
+-   Configuration directory: classpath:/config
+-   Services import config using:
+    spring.config.import=optional:configserver:http://localhost:8888
 
 ------------------------------------------------------------------------
 
 # 🔎 Eureka Dashboard
 
+Access service registry:
+
 http://localhost:8761
 
-All services automatically register with Eureka.
+All microservices automatically register here.
 
 ------------------------------------------------------------------------
 
 # 🚀 How To Run
 
-1.  Start infrastructure:
-    -   PostgreSQL
-    -   MongoDB
-    -   RabbitMQ
-    -   Keycloak
-2.  Start services in order:
-    -   Config Server
-    -   Eureka Server
-    -   User / Activity / AI Services
-    -   API Gateway
-    -   Frontend
+### 1️⃣ Start Infrastructure
+
+-   PostgreSQL
+-   MongoDB
+-   RabbitMQ
+-   Keycloak
+
+### 2️⃣ Start Services (Order Matters)
+
+1.  Config Server
+2.  Eureka Server
+3.  User Service
+4.  Activity Service
+5.  AI Service
+6.  API Gateway
+7.  Frontend
 
 ------------------------------------------------------------------------
 
@@ -156,7 +218,7 @@ All services automatically register with Eureka.
 
 ------------------------------------------------------------------------
 
-# 🎯 Key Architecture Patterns
+# 🎯 Architectural Patterns
 
 -   Microservices Architecture
 -   API Gateway Pattern
@@ -165,18 +227,18 @@ All services automatically register with Eureka.
 -   OAuth2 + PKCE Authentication
 -   Centralized Configuration
 -   Polyglot Persistence
--   AI Integration
+-   AI Integration Service
 
 ------------------------------------------------------------------------
 
-# 📌 Why This Project Stands Out
+# 📌 Why This Project Is Strong
 
-✔ Real OAuth2 PKCE authentication\
-✔ Gateway-level JWT security\
+✔ Secure OAuth2 PKCE authentication\
+✔ Gateway-level JWT validation\
 ✔ Event-driven AI recommendation pipeline\
-✔ External AI (LLM) integration\
-✔ Clean service separation\
-✔ Production-style architecture
+✔ External LLM integration\
+✔ Clean separation of concerns\
+✔ Production-style scalable design
 
-This project is ideal for showcasing backend system design, distributed
-systems knowledge, and modern cloud-native development practices.
+This project demonstrates strong backend architecture skills suitable
+for enterprise environments and system design interviews.
