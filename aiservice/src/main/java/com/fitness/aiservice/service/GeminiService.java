@@ -3,6 +3,7 @@ package com.fitness.aiservice.service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Map;
 
@@ -30,14 +31,16 @@ public class GeminiService {
                 }
         );
 
-        String response = webClient.post()
-                .uri(geminiApiUrl + geminiApiKey)
+        String fullUri = UriComponentsBuilder.fromHttpUrl(geminiApiUrl)
+                .queryParam("key", geminiApiKey)
+                .toUriString();
+
+        return webClient.post()
+                .uri(fullUri)
                 .header("Content-Type", "application/json")
                 .bodyValue(requestBody)
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
-
-        return response;
     }
 }

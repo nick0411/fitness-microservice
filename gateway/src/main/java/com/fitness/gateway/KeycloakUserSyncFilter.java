@@ -48,6 +48,7 @@ public class KeycloakUserSyncFilter implements WebFilter {
                         }
                     })
                     .then(Mono.defer(() -> {
+                        log.info("FILTER SUCCESSFUL: Forwarding request to downstream service...");
                         ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
                                 .header("X-User-ID", finalUserId)
                                 .build();
