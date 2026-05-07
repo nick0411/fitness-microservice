@@ -1,11 +1,11 @@
-# 🏋️‍♂️ Fitness Microservices Platform
+# Fitness Microservices Platform
 
 > Enterprise-style Spring Boot Microservices Architecture with OAuth2
 > Security, Event-Driven AI Recommendations, and Polyglot Persistence.
 
 ------------------------------------------------------------------------
 
-## ✨ Overview
+## Overview
 
 This project is a production-style distributed backend system built
 using Spring Boot and Spring Cloud.\
@@ -22,7 +22,7 @@ security, service discovery, and event-driven architecture.
 
 ------------------------------------------------------------------------
 
-# 🏗️ System Architecture
+# System Architecture
 
                                        ┌─────────────────────────┐
                                        │        Keycloak         │
@@ -74,7 +74,7 @@ security, service discovery, and event-driven architecture.
 
 ------------------------------------------------------------------------
 
-# 🔐 Authentication -- OAuth2 + PKCE
+# Authentication -- OAuth2 + PKCE
 
 Authentication is handled by Keycloak.
 
@@ -97,7 +97,7 @@ Security is centralized at the Gateway level.
 
 ------------------------------------------------------------------------
 
-## 📦 Services & Ports
+## Services & Ports
 
 | Service            | Port  | Responsibility                          |
 |--------------------|-------|------------------------------------------|
@@ -115,7 +115,7 @@ Security is centralized at the Gateway level.
 
 ------------------------------------------------------------------------
 
-# 🗄️ Databases
+# Databases
 
 ## PostgreSQL (User Service)
 
@@ -134,7 +134,7 @@ Used for flexible document-based storage.
 
 ------------------------------------------------------------------------
 
-# 🐇 Event-Driven AI Pipeline
+# Event-Driven AI Pipeline
 
 1.  Activity Service stores activity in MongoDB.
 2.  Activity Service publishes event to RabbitMQ.
@@ -149,7 +149,7 @@ This ensures loose coupling and asynchronous processing.
 
 ------------------------------------------------------------------------
 
-# 🤖 Gemini Integration
+# Gemini Integration
 
 AI Service integrates with Gemini using environment variables:
 
@@ -161,7 +161,7 @@ data.
 
 ------------------------------------------------------------------------
 
-# ⚙️ Config Server
+# Config Server
 
 -   Port: 8888
 -   Profile: native
@@ -171,7 +171,7 @@ data.
 
 ------------------------------------------------------------------------
 
-# 🔎 Eureka Dashboard
+# Eureka Dashboard
 
 Access service registry:
 
@@ -181,16 +181,16 @@ All microservices automatically register here.
 
 ------------------------------------------------------------------------
 
-# 🚀 How To Run
+# How To Run
 
-### 1️⃣ Start Infrastructure
+###  Start Infrastructure
 
 -   PostgreSQL
 -   MongoDB
 -   RabbitMQ
 -   Keycloak
 
-### 2️⃣ Start Services (Order Matters)
+###  Start Services (Order Matters)
 
 1.  Config Server
 2.  Eureka Server
@@ -202,7 +202,7 @@ All microservices automatically register here.
 
 ------------------------------------------------------------------------
 
-# 🧠 Technologies Used
+# Technologies Used
 
 -   Java 17
 -   Spring Boot
@@ -218,7 +218,7 @@ All microservices automatically register here.
 
 ------------------------------------------------------------------------
 
-# 🎯 Architectural Patterns
+# Architectural Patterns
 
 -   Microservices Architecture
 -   API Gateway Pattern
@@ -231,7 +231,7 @@ All microservices automatically register here.
 
 ------------------------------------------------------------------------
 
-# 📌 Why This Project Is Strong
+# Why This Project Is Strong
 
 ✔ Secure OAuth2 PKCE authentication\
 ✔ Gateway-level JWT validation\
