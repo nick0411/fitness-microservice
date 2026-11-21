@@ -1,196 +1,131 @@
 # Fitness Microservices Platform
 
-> Enterprise-style Spring Boot Microservices Architecture with OAuth2
-> Security, Event-Driven AI Recommendations, and Polyglot Persistence.
+> Enterprise-style Spring Boot Microservices Architecture featuring OAuth2 Security, Event-Driven AI Recommendations, Polyglot Persistence, and full containerization via Docker & Docker Compose.
 
-------------------------------------------------------------------------
+---
 
 ## Overview
 
-This project is a production-style distributed backend system built
-using Spring Boot and Spring Cloud.\
-It simulates a real-world fitness tracking platform where:
+This project is a production-style distributed system built using **Spring Boot**, **Spring Cloud**, and **React**, fully containerized for seamless deployment. It simulates a real-world fitness tracking platform where:
 
--   Users authenticate securely using OAuth2 (PKCE flow).
--   Activities are logged and stored.
--   Events are published asynchronously via RabbitMQ.
--   AI-powered workout recommendations are generated using Gemini API.
--   All services are routed through a secure API Gateway.
+- Users authenticate securely using **OAuth2 (PKCE flow)** via Keycloak.
+- Activities are logged and persisted in **MongoDB**.
+- Events are published asynchronously via **RabbitMQ**.
+- AI-powered workout recommendations are generated using the **Google Gemini API**.
+- All microservices are dynamically discovered via **Eureka**, centrally configured via **Config Server** and routed through a secure **API Gateway**.
 
-The system demonstrates clean microservices separation, centralized
-security, service discovery, and event-driven architecture.
+---
 
-------------------------------------------------------------------------
+## System Architecture
 
-# System Architecture
 <img width="1408" height="768" alt="Fitness_Microservice" src="https://github.com/user-attachments/assets/7efa3744-74a2-4341-90ef-5a827a4ab62b" />
-------------------------------------------------------------------------
 
-# Authentication -- OAuth2 + PKCE
+---
 
-Authentication is handled by Keycloak.
+## Services, Ports & Runtime Versions
 
-### Configuration
+| Service | Host Port | Container Port | Tech / Java Version | Responsibility |
+| :--- | :--- | :--- | :--- | :--- |
+| **Frontend** | `5173` | `80` | React + Vite (Nginx) | User Interface |
+| **API Gateway** | `8080` | `8080` | Java 23 / Spring Cloud | Routing & JWT Validation |
+| **User Service** | `8081` | `8081` | Java 23 / Spring Boot | User Management (PostgreSQL) |
+| **Activity Service** | `8082` | `8082` | Java 23 / Spring Boot | Activity Tracking (MongoDB) |
+| **AI Service** | `8083` | `8083` | Java 23 / Spring Boot | AI Recommendations (MongoDB + Gemini) |
+| **Eureka Server** | `8761` | `8761` | Java 17 / Spring Cloud | Service Discovery Registry |
+| **Config Server** | `8888` | `8888` | Java 17 / Spring Cloud | Centralized Configuration |
+| **Keycloak** | `8181` | `8080` | Keycloak 24.0.1 | OAuth2 Identity Provider |
+| **RabbitMQ** | `5672` / `15672` | `5672` / `15672` | RabbitMQ 3 Alpine | Asynchronous Message Broker & UI |
+| **PostgreSQL** | `5432` | `5432` | Postgres 15 Alpine | Relational User Database |
+| **MongoDB** | `27017` | `27017` | Mongo 7.0 | Activity & Recommendation Document Store |
 
--   Realm: `fitness-oauth2`
--   Client: `oauth2-pkce-client`
--   Keycloak URL: http://localhost:8181
--   Redirect URI: http://localhost:5173
+---
 
-### Authentication Flow
+## Prerequisites
 
-1.  User logs in via Keycloak.
-2.  Frontend receives access token.
-3.  Token is sent to API Gateway.
-4.  Gateway validates JWT.
-5.  Request forwarded to internal services.
+- [Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/) installed on your machine.
+- A valid **Google Gemini API Key**.
 
-Security is centralized at the Gateway level.
+---
 
-------------------------------------------------------------------------
+## Environment Configuration
 
-## Services & Ports
+Before starting the containers, create a `.env` file in the root directory (alongside `docker-compose.yml`) and add your Gemini API credentials:
 
-| Service            | Port  | Responsibility                          |
-|--------------------|-------|------------------------------------------|
-| Config Server      | 8888  | Centralized configuration               |
-| Eureka Server      | 8761  | Service discovery                       |
-| API Gateway        | 8080  | Routing + JWT validation                |
-| User Service       | 8081  | User management (PostgreSQL)            |
-| Activity Service   | 8082  | Activity tracking (MongoDB)             |
-| AI Service         | 8083  | AI recommendations (MongoDB)            |
-| Keycloak           | 8181  | OAuth2 authentication                   |
-| RabbitMQ           | 5672  | Event broker                            |
-| PostgreSQL         | 5432  | User database                           |
-| MongoDB            | 27017 | Activity & Recommendation database      |
-| Frontend           | 5173  | React UI                                |
+```env
+GEMINI_API_URL=https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent
+GEMINI_API_KEY=your_actual_gemini_api_key_here
+```
 
-------------------------------------------------------------------------
+> **Note:** Ensure `.env` is listed in your `.gitignore` so your API keys are never committed to version control.
 
-# Databases
+---
 
-## PostgreSQL (User Service)
+## How to Run (Docker Compose)
 
--   Database: `fitness_user_db`
--   Port: 5432
+The project uses a parameterized multi-stage `Dockerfile` and Docker Compose health checks (`service_healthy`) to automatically build and boot all 11 containers in the proper dependency order.
 
-Used for structured relational user data.
+### 1. Build and Start the Entire Stack
+Run the following command from the project root directory:
+```bash
+docker compose up --build -d
+```
 
-## MongoDB
+### 2. Monitor Container Status
+Verify that Eureka, Config Server and all dependent microservices are healthy and running:
+```bash
+docker compose ps
+```
 
--   `fitnessactivity` → Activity Service
--   `fitnessrecommendation` → AI Service
--   Port: 27017
+### 3. Access Dashboards & UIs
+- **Frontend Application:** [http://localhost:5173](http://localhost:5173)
+- **Eureka Service Registry:** [http://localhost:8761](http://localhost:8761)
+- **Keycloak Admin Console:** [http://localhost:8181](http://localhost:8181) *(Login: `admin` / `admin`)*
+- **RabbitMQ Management UI:** [http://localhost:15672](http://localhost:15672) *(Login: `guest` / `guest`)*
 
-Used for flexible document-based storage.
+### 4. Stop and Clean Up
+To stop all running containers:
+```bash
+docker compose down
+```
+To stop containers and delete persistent database volumes (`postgres_data` and `mongo_data`):
+```bash
+docker compose down -v
+```
 
-------------------------------------------------------------------------
+---
 
-# Event-Driven AI Pipeline
+## Authentication — OAuth2 + PKCE
 
-1.  Activity Service stores activity in MongoDB.
-2.  Activity Service publishes event to RabbitMQ.
-3.  RabbitMQ delivers message to AI Service.
-4.  AI Service consumes the event.
-5.  AI Service sends structured prompt to Gemini API.
-6.  Gemini generates workout recommendation.
-7.  AI Service stores recommendation in MongoDB.
-8.  Client retrieves recommendation via API Gateway.
+Authentication is managed centrally by **Keycloak** and enforced at the **API Gateway**:
 
-This ensures loose coupling and asynchronous processing.
+- **Realm:** `fitness-oauth2`
+- **Client:** `oauth2-pkce-client`
+- **Keycloak URL:** `http://localhost:8181`
+- **Frontend Redirect URI:** `http://localhost:5173`
 
-------------------------------------------------------------------------
+### Flow
+1. User authenticates via Keycloak in the React frontend.
+2. Frontend attaches the JWT access token to API requests.
+3. API Gateway validates the JWT before routing traffic over the internal `fitness-net` Docker bridge network.
 
-# Gemini Integration
+---
 
-AI Service integrates with Gemini using environment variables:
+## Event-Driven AI Pipeline
 
-    export GEMINI_API_URL=your_endpoint
-    export GEMINI_API_KEY=your_api_key
+1. **Activity Service** persists a new workout activity into MongoDB (`fitnessactivity`).
+2. **Activity Service** publishes an activity event to **RabbitMQ**.
+3. **AI Service** consumes the event asynchronously from the queue.
+4. **AI Service** sends a structured prompt to the **Google Gemini API**.
+5. Gemini returns personalized workout insights, which **AI Service** stores in MongoDB (`fitnessrecommendation`).
+6. The client fetches recommendations seamlessly through the **API Gateway**.
 
-Gemini generates personalized workout recommendations based on activity
-data.
+---
 
-------------------------------------------------------------------------
+## Technologies Used
 
-# Config Server
-
--   Port: 8888
--   Profile: native
--   Configuration directory: classpath:/config
--   Services import config using:
-    spring.config.import=optional:configserver:http://localhost:8888
-
-------------------------------------------------------------------------
-
-# Eureka Dashboard
-
-Access service registry:
-
-http://localhost:8761
-
-All microservices automatically register here.
-
-------------------------------------------------------------------------
-
-# How To Run
-
-###  Start Infrastructure
-
--   PostgreSQL
--   MongoDB
--   RabbitMQ
--   Keycloak
-
-###  Start Services (Order Matters)
-
-1.  Config Server
-2.  Eureka Server
-3.  User Service
-4.  Activity Service
-5.  AI Service
-6.  API Gateway
-7.  Frontend
-
-------------------------------------------------------------------------
-
-# Technologies Used
-
--   Java 17
--   Spring Boot
--   Spring Cloud
--   Spring Security OAuth2 Resource Server
--   Keycloak
--   PostgreSQL
--   MongoDB
--   RabbitMQ
--   Google Gemini API
--   React + Vite
--   Maven
-
-------------------------------------------------------------------------
-
-# Architectural Patterns
-
--   Microservices Architecture
--   API Gateway Pattern
--   Service Discovery Pattern
--   Event-Driven Architecture
--   OAuth2 + PKCE Authentication
--   Centralized Configuration
--   Polyglot Persistence
--   AI Integration Service
-
-------------------------------------------------------------------------
-
-# Why This Project Is Strong
-
-✔ Secure OAuth2 PKCE authentication\
-✔ Gateway-level JWT validation\
-✔ Event-driven AI recommendation pipeline\
-✔ External LLM integration\
-✔ Clean separation of concerns\
-✔ Production-style scalable design
-
-This project demonstrates strong backend architecture skills suitable
-for enterprise environments and system design interviews.
+- **Backend:** Java 17 & Java 23, Spring Boot, Spring Cloud (Gateway, Netflix Eureka, Config Server), Spring Security OAuth2 Resource Server
+- **Frontend:** React, Vite
+- **Security:** Keycloak (OAuth2 + PKCE)
+- **Databases & Messaging:** PostgreSQL 15, MongoDB 7, RabbitMQ 3
+- **AI Integration:** Google Gemini API
+- **DevOps & Containerization:** Docker (Multi-stage builds), Docker Compose
